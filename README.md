@@ -2,7 +2,7 @@
 
 # Install Segala Kebutuhan
 
-Install depedensi yang dibutuhakan dalam pengembangan apliaksi seperti Laravel, Laravel Sanctum, Laravel Fortify DLL
+Install depedensi yang dibutuhakan dalam pengembangan aplikasi seperti Laravel, Laravel Sanctum, Laravel Fortify DLL
 
 ## Laravel Framework
 
@@ -16,7 +16,7 @@ Install package autentikasi Laravel Fortify, disini akan menggunakan versi 1.7
 
 `composer require laravel/fortify:^1.7`
 
-Selanjutnya lakukan perintah `php artisan vendor:publish` lalu pilih nomor list yang memiliki <i>namespace</i> `Provider: Laravel\Fortify\ForifyServiceProvider` dan tekan enter atau run
+Selanjutnya lakukan perintah `php artisan vendor:publish` lalu pilih nomor list yang memiliki _namespace_ `Provider: Laravel\Fortify\ForifyServiceProvider` dan tekan enter atau run
 
 ## Laravel Sanctum
 
@@ -30,9 +30,9 @@ Selanjutnya lakukan perintah `php artisan vendor:publish` lalu pilih nomor list 
 
 Tahap selanjutnya migrasi table ke database
 
--   Lakukan migration ke database, pastikan telah membuat database pada dbms. Lalu atur nama database pada file `.env`
+-   Lakukan migration ke Database, pastikan telah membuat Database pada DBMS. Lalu atur nama Database pada file `.env`
 
--   Setelah Database dibuat dan nama database pada dile `.env` disesuaikan dengan nama database pada DBMS. Lakukan migration dengan memebuat perintah `php artisan migrate`
+-   Setelah Database dibuat dan nama database pada dile `.env` disesuaikan dengan nama Database pada DBMS. Lakukan _migration_ dengan memebuat perintah `php artisan migrate`
 
 <hr>
 
@@ -40,7 +40,7 @@ Tahap selanjutnya migrasi table ke database
 
 Disini akan melakukan _setup_ untuk mengimplementasikan **Sanctum** maupun **Fortify** sebagai API. Ada beberapa hal yang perlu di modifikasi atau disesuaikan agar nantinya aplikasi backend saling terhubung dengan frontend.
 
--   pertama silahkan masukkan sanctum middleware `\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class` kedalam `app/Http/Kernel.php` tepat pada `api` key.
+-   Pertama silahkan masukkan sanctum middleware `\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class` kedalam `app/Http/Kernel.php` tepat pada `api` key.
 
 ```php
 'api' => [
@@ -49,3 +49,23 @@ Disini akan melakukan _setup_ untuk mengimplementasikan **Sanctum** maupun **For
   \Illuminate\Routing\Middleware\SubstituteBindings::class,
 ]
 ```
+
+-   Setelah itu pastikan `FortifyServiceProvider` telah terdaftar di `config/app.php`. Jika tidak terdaftar maka sistem tidak akan mengenalinya.
+
+```php
+  'providers' => [
+    /*
+     * Application Service Providers...
+     */
+    App\Providers\FortifyServiceProvider::class,
+  ]
+```
+
+-   Masih pada file `config/app.php` kita akan menambahkan **SPA URL** yang secara default tidak ada pada halaman tersebut. Kita akan menambah `spa_url` tepat dibawah `asset_url`.
+
+```php
+  'asset_url' => env('ASSET_URL', null),
+  'spa_url' => env('SPA_URL', null),
+```
+
+-   Selanjutnya kita tambahkan juga `SPA_URL` pada file `.env` dengan url yang berisi alamat frontend `SPA_URL=http://localhost:3000`
