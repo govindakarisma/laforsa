@@ -6,9 +6,11 @@ Install depedensi yang dibutuhakan dalam pengembangan aplikasi seperti Laravel, 
 
 ## Laravel Framework
 
-Disini akan menggunakan laravel versi 8 sekian
+Aplikasi ini menggunakan laravel versi 8
 
-`composser create-project laravel/laravel:^8.0 api-toska`
+```
+composser create-project laravel/laravel:^8.0 api-toska
+```
 
 ## Laravel Fortify
 
@@ -50,7 +52,7 @@ Disini akan melakukan _setup_ untuk mengimplementasikan **Sanctum** maupun **For
 ]
 ```
 
--   Setelah itu pastikan `FortifyServiceProvider` telah terdaftar di `config/app.php`. Jika tidak terdaftar maka sistem tidak akan mengenalinya.
+-   Setelah itu pastikan `App\Providers\FortifyServiceProvider::class` telah terdaftar di `config/app.php`. Jika tidak terdaftar maka sistem tidak akan mengenalinya.
 
 ```php
   'providers' => [
