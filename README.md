@@ -69,3 +69,98 @@ Disini akan melakukan _setup_ untuk mengimplementasikan **Sanctum** maupun **For
 ```
 
 -   Selanjutnya kita tambahkan juga `SPA_URL` pada file `.env` dengan url yang berisi alamat frontend `SPA_URL=http://localhost:3000`
+
+-   Lanjut untuk mengatur _Session Cookie Domain_ yang terdapat pada file `config/session.php` pada objek `'domain' => env('SESSION_DOMAIN', null)`. karna session domain akan membaca file `.env` maka kita cukup menambahkan session domainnya pada file tersebut. Buka file `.env` lalu masukkan atribut `SESSION_DOMAIN=localhost`
+
+-   Selanjutnya lakukan setting untuk frontend dengan membuka file `config/sanctum.php`.
+
+```php
+  'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
+        '%s%s',
+        'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1',
+        env('APP_URL') ? ','.parse_url(env('APP_URL'), PHP_URL_HOST) : ''
+    ))),
+```
+
+-   Secara default _sanctum stateful domain_ telah menyediakan domain untuk _development_. Tetapi untuk memastikan, kita masukkan saja konfigurasi atau atributnya kedalam file `.env` saja dengan membuat atribut `SANCTUM_STATEFUL_DOMAIN=localhost:3000`
+
+-   Selanjutnya lakukan pengaturan _**CORS**_ agar _frontend_ bisa mengakses _backend_. buka dile `config/cors.php` lalu atur path dengan menambahkan semua url yang dibutuhkan.
+
+```php
+  'paths' => [
+    'api/*',
+    'login',
+    'logout',
+    'register',
+    'user/password',
+    'forgot-password',
+    'reset-password',
+    'sanctum/csrf-cookie',
+    'user/profile-information',
+    'email/verification-notification',
+  ],
+```
+
+-   Masih pada file yang sama, terdapat atribut `'support_credential' => false` yang secara default bernillai `false`. jika tidak diizinkan credential dari cookie yang ada di backend maka akan gagal, maka pastikan bernila `true` agar frontend aplikasi bisa menggunakan cookie dari backend
+
+-   Next, setup fortify itu sendiri pada file `config/fortify.php` untuk membuat default redirect-nya dengan memasukkan url spa yang sudah dilakukan setup pada file `.env` seperti berikut.
+
+```php
+  /** Kondisi awal */
+  'home' => RouteServiceProvider::HOME,
+  /** Ubah menjadi */
+  'home' => env('SPA_URL'.'/dashboard')
+  /** Atau */
+  'home' => config('app.spa_url'),
+```
+
+-   Masih pada file yang sama, kita akan mengatur _view_. view akan dieksekusi saat bernilai `true`. Ubah menjadi `false` karena kita hanya menggunakan ini sebagai backend maka tidak memerlukan view.
+
+```php
+  'views' => false
+```
+
+-   Lanjuttt, pergi ke file `app\Http\Middleware\Authenticate.php`
+
+```php
+  protected function redirectTo($request)
+    {
+        if (!$request->expectsJson()) {
+            return route('login');
+        }
+    }
+```
+
+-   Pada file tersebut terdapat fungsi pengecekan autentikasi. Jika user mengakses url yang memerlukan autentikasi namun belum melakukan login, maka akan dilakukan penolakan. secara deafult akan mengembalikan user ke halaman login `http://localhost:8000/login`. Lakukan modifikasi karna kita akan melakukan redirect ke halaman frontend.
+
+```php
+  protected function redirectTo($request)
+    {
+        if (!$request->expectsJson()) {
+            return config('app.spa_url') . '/login';
+        }
+    }
+```
+
+-   Selanjutnya, jika user sudah terautentikasi, jangan lagi melakukan login. Pada tahap ini dapat diatur pada file `app\Http\Middleware\RedirectIfAuthenticated.php`
+
+```php
+  public function handle(Request $request, Closure $next, ...$guards)
+    {
+        $guards = empty($guards) ? [null] : $guards;
+
+        foreach ($guards as $guard) {
+            if (Auth::guard($guard)->check()) {
+                /** Masukkan script pengkondisian dibawah ini */
+                if ($request->expectsJson()) {
+                    return response()->json(['error' => 'You are already authenticated'], 200);
+                }
+                return redirect(RouteServiceProvider::HOME);
+            }
+        }
+
+        return $next($request);
+    }
+```
+
+Sampai disini telah dilakukan segala konfigurasi kebutuhan Banckend dan Frontend, serta dapat dipastikan aplikasi akan saling terintegrasi.
