@@ -41,4 +41,14 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function getJoinedAttribute()
+    {
+        return date('y') == $this->created_at->format('y') ? $this->created_at->format('d F') : $this->created_at->format('d F, Y');
+    }
+
+    public function gravatar($size = 150)
+    {
+        return "https://www.gravatar.com/avatar/" . md5(strtolower(trim($this->email))) . "?d=mm&s" . $size;
+    }
 }
